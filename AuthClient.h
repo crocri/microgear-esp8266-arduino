@@ -15,7 +15,6 @@
 #define GEARAUTHPORT 8080
 #define GEARAUTHSECUREPORT 8081
 
-#define MGREV "E8A1b"
 #define MAXVERIFIERSIZE         32
 #define MAXGEARAUTHSIZE         32
 #define TOKENSIZE               16
@@ -39,24 +38,24 @@ class AuthClient {
         void stop();
         void write_P(const char[]);
         void writeln_P(const char[]);
-        void write(char*);
-        void writeln(char*);
+        void write(const char*);
+        void writeln(const char*);		
         bool readln(char*, size_t);
-        int getGearToken(char, char*, char*, char*, char*, char*, char*, char *, char*, char*, char*);
+        int getGearToken(char, char*, char*, char*, char*, char*, char*, char *, const char*, char*, char*);
     private:
         Client* client;
         char* appid;
         char* gearid;
         char* scope;
         bool securemode;
-        void writeout(char*, bool, bool);
-        char* append(char*, char*, char);
+        void writeout(const char*, bool, bool);
+        char* append(char*, const char*, char);
         char* append_P(char*, char*, char);
-        char* encode(char*,char);
-        char* encode(char*,char*);
+        char* encode(char*, char);
+        char* encode(char*, const char*);
         char* strtail(char*);
-        void strcat(char*, char*);
-        void addParam(char*, char*, char*, bool);
+        void strcat(char*, const char*);
+        void addParam(char*, const char*, const char*, bool);
         unsigned long bootts;
 };
 #endif
