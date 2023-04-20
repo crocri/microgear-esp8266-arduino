@@ -111,7 +111,7 @@ class MicroGear {
 		int connect(char*);
 		bool connected();
 
-		bool publish(char*, char*);
+		bool publish(char*, const char*);
 		bool publish(char*, char*, bool);
 
 		bool publish(char*, double);
@@ -136,21 +136,22 @@ class MicroGear {
 		bool chat(char*, double, int);
 		bool chat(char*, String);
 
-		void subscribe(char*);
+		void subscribe(const char*);
 		void unsubscribe(char*);
 		int state();
 		void loop();
         void resetToken();
         void setToken(char*, char*, char*);
-        int init(char*, char*);
-        int init(char*, char*, char*);
-        int init(char*, char*, char*, char*);
+        void init(char*, char*);
+        void init(char*, char*, char*);
+        void init(char*, char*, char*, char*);
         void resetEndpoint();
-		void strcat(char*, char*);
+		void strcat(char*, const char*);
+		void on(unsigned char,void (* callback)(const char*, uint8_t*,unsigned int));
 		void on(unsigned char,void (* callback)(char*, uint8_t*,unsigned int));
 		void setEEPROMOffset(int);
 		void readEEPROM(char*,int, int);
-		void writeEEPROM(char*,int, int);
+		void writeEEPROM(const char*,int, int);
         int setConfig(char*, char*);
 };
 
