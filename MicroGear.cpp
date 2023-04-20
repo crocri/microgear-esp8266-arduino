@@ -4,11 +4,11 @@ unsigned char topicprefixlen;
 MicroGear* mg = NULL;
 
 void (* cb_message)(char*, uint8_t*,unsigned int);
-void (* cb_present)(char*, uint8_t*,unsigned int);
-void (* cb_absent)(char*, uint8_t*,unsigned int);
+void (* cb_present)(const char*, uint8_t*,unsigned int);
+void (* cb_absent)(const char*, uint8_t*,unsigned int);
 void (* cb_connected)(char*, uint8_t*,unsigned int);
-void (* cb_error)(char*, uint8_t*,unsigned int);
-void (* cb_info)(char*, uint8_t*,unsigned int);
+void (* cb_error)(const char*, uint8_t*,unsigned int);
+void (* cb_info)(const char*, uint8_t*,unsigned int);
 
 void msgCallback(char* topic, uint8_t* payload, unsigned int length) {
     /* remove /appid/ */
@@ -149,11 +149,9 @@ void MicroGear::syncTime(Client *client, unsigned long *bts) {
         #endif
         clientsecure->setFingerprint(tstr);
         if(clientsecure->connect(gearauth,port)){
-            if (clientsecure->verify(tstr, gearauth)) {
-                #ifdef DEBUG_H
-                    Serial.println("fingerprint matched");
-                #endif
-            }
+            #ifdef DEBUG_H
+                Serial.println("fingerprint matched");
+            #endif
         }
         else {
             clientsecure->setInsecure();
@@ -231,11 +229,8 @@ MicroGear::MicroGear(Client& netclient ) {
     mg = (MicroGear *)this;
 }
 
-void MicroGear::on(unsigned char event, void (* callback)(char*, uint8_t*,unsigned int)) {
+void MicroGear::on(unsigned char event, void (* callback)(const char*, uint8_t*,unsigned int)) {
     switch (event) {
-        case MESSAGE : 
-                if (callback) cb_message = callback;
-                break;
         case PRESENT : 
                 if (callback) cb_present = callback;
                 if (connected())
@@ -246,9 +241,6 @@ void MicroGear::on(unsigned char event, void (* callback)(char*, uint8_t*,unsign
                 if (connected())
                     subscribe("/&absent");
                 break;
-        case CONNECTED : 
-                if (callback) cb_connected = callback;
-                break;
         case ERROR : 
                 if (callback) cb_error = callback;
                 break;
@@ -258,6 +250,16 @@ void MicroGear::on(unsigned char event, void (* callback)(char*, uint8_t*,unsign
     }
 }
 
+void MicroGear::on(unsigned char event, void (* callback)(char*, uint8_t*,unsigned int)) {
+    switch (event) {
+        case MESSAGE : 
+                if (callback) cb_message = callback;
+                break;
+		case CONNECTED : 
+                if (callback) cb_connected = callback;
+                break;
+    }
+}
 void MicroGear::setEEPROMOffset(int val) {
     this->eepromoffset = val;
 }
@@ -270,7 +272,7 @@ void MicroGear::readEEPROM(char* buff,int offset,int len) {
     buff[len] = '\0';
 }
 
-void MicroGear::writeEEPROM(char* buff,int offset,int len) {
+void MicroGear::writeEEPROM(const char* buff,int offset,int len) {
     int i;
     for (i=0;i<len;i++) {
         EEPROM.write(this->eepromoffset+offset+i,buff[i]);
@@ -589,6 +591,8 @@ int MicroGear::connectBroker(char* appid) {
                     if (backoff < MAXBACKOFFTIME) backoff = 2*backoff;
                     delay(backoff);
                     return NETPIECLIENT_NOTCONNECTED;
+			default :
+			        return NETPIECLIENT_NOTCONNECTED;
         }
     }
     else return NETPIECLIENT_TOKENERROR;
@@ -608,7 +612,7 @@ bool MicroGear::connected() {
     return this->sockclient->connected();
 }
 
-void MicroGear::subscribe(char* topic) {
+void MicroGear::subscribe(const char* topic) {
     char top[MAXTOPICSIZE] = "/";
 
     strcat(top,appid);
@@ -632,7 +636,7 @@ bool MicroGear::publish(char* topic, char* message, bool retained) {
     return mqttclient->publish(top, message, retained);
 }
 
-bool MicroGear::publish(char* topic, char* message) {
+bool MicroGear::publish(char* topic, const char* message) {
     return publish(topic, message, false);
 }
 
@@ -785,15 +789,15 @@ bool MicroGear::chat(char* topic, String message) {
     return chat(topic, buff);
 }
 
-int MicroGear::init(char* gearkey,char* gearsecret) {
-    init(gearkey,gearsecret,"","");
+void MicroGear::init(char* gearkey,char* gearsecret) {
+    init(gearkey,gearsecret, (char *)"", (char *)"");
 }
 
-int MicroGear::init(char* gearkey,char* gearsecret,char* gearalias) {
-    init(gearkey,gearsecret,gearalias,"");
+void MicroGear::init(char* gearkey, char* gearsecret, char* gearalias) {
+    init(gearkey, gearsecret, gearalias, (char *)"");
 }
 
-int MicroGear::init(char* gearkey,char* gearsecret,char* gearalias, char* scope) {
+void MicroGear::init(char* gearkey, char* gearsecret, char* gearalias, char* scope) {
     this->gearkey = gearkey;
     this->gearsecret = gearsecret;
     this->gearalias = gearalias;
@@ -820,7 +824,7 @@ void MicroGear::setToken(char *key, char* token,char* tokensecret) {
     writeEEPROM(tokensecret,EEPROM_TOKENSECRETOFFSET,TOKENSECRETSIZE);
 }
 
-void MicroGear::strcat(char* a, char* b) {
+void MicroGear::strcat(char* a, const char* b) {
     char *p;
     p = a + strlen(a);
     strcpy(p,b);
