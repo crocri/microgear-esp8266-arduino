@@ -43,7 +43,7 @@ void AuthClient::stop() {
  * @param newline append new line character?
  * @param progmem true:copy from prog memory, false:copy from sram
  */
-void AuthClient::writeout(char* str, bool newline, bool progmem) {
+void AuthClient::writeout(const char* str, bool newline, bool progmem) {
     unsigned char len;
     uint8_t ch, buff[MAXHEADERLINESIZE];
 
@@ -65,11 +65,11 @@ void AuthClient::writeout(char* str, bool newline, bool progmem) {
     client->write(buff,len);
 }
 
-void AuthClient::write(char* str) {
+void AuthClient::write(const char* str) {
   writeout(str, false, false);
 }
 
-void AuthClient::writeln(char* str) {
+void AuthClient::writeln(const char* str) {
   writeout(str, true, false);
 }
 
@@ -120,7 +120,7 @@ bool processTok(char* key, char* buff, char **p) {
     else return false;
 }
 
-char* AuthClient::append(char* buffer, char* mstr, char stopper) {
+char* AuthClient::append(char* buffer, const char* mstr, char stopper) {
     /* strcat(buffer,mstr) causes a strange bug */
     strcat(buffer,mstr);
     if (stopper) {
@@ -131,7 +131,7 @@ char* AuthClient::append(char* buffer, char* mstr, char stopper) {
     return buffer;
 }
 
-void AuthClient::addParam(char* buff, char* key, char* value, bool first) {
+void AuthClient::addParam(char* buff, const char* key, const char* value, bool first) {
     if (!first) strcat(buff,"%26");
     strcat(buff,key);
     strcat(buff,"%3D");
@@ -148,7 +148,7 @@ void AuthClient::randomString(char *nonce, int size) {
     nonce[size] = '\0';
 }
 
-int AuthClient::getGearToken(char mode, char* token, char* tokensecret, char* endpoint, char *flag, char* gearkey, char* gearsecret, char* gearalias, char* scope, char* rtoken, char* rtokensecret) {
+int AuthClient::getGearToken(char mode, char* token, char* tokensecret, char* endpoint, char *flag, char* gearkey, char* gearsecret, char* gearalias, const char* scope, char* rtoken, char* rtokensecret) {
         #ifdef DEBUG_H
             Serial.println("Enter getGearToken()..");
         #endif
@@ -158,7 +158,9 @@ int AuthClient::getGearToken(char mode, char* token, char* tokensecret, char* en
         char nonce[NONCESIZE+1];
         char verifier[32+1];
 
-         #define OAUTH_CALLBACK  "oauth_callback="
+		const char* MGREV = "E8A1b";
+		const char* OAUTH_CALLBACK = "oauth_callback=";
+        // #define OAUTH_CALLBACK  "oauth_callback="
          #define OAUTH_CONSUMER_KEY  "oauth_consumer_key="
          #define OAUTH_NONCE  "oauth_nonce="
          #define OAUTH_SIGNATURE_METHOD_CONST  "oauth_signature_method=\"HMAC-SHA1\""
@@ -411,7 +413,7 @@ char* AuthClient::encode(char *buffer, char ch) {
     return buffer;
 }
 
-char* AuthClient::encode(char *buffer, char *data) {
+char* AuthClient::encode(char *buffer, const char *data) {
     char* p = buffer;
     while (char ch = *data++) p = encode(p, ch);
     return buffer;
@@ -423,7 +425,7 @@ char* AuthClient::strtail(char* buff) {
     return p;
 }
 
-void AuthClient::strcat(char* a, char* b) {
+void AuthClient::strcat(char* a, const char* b) {
     char *p;
     p = a + strlen(a);
     strcpy(p,b);
